@@ -23,7 +23,7 @@ test('@api Get Booking details', async () => {
   expect(booking.lastname).toBe(payload.lastname);
 });
 
-test('@webRead Browser URL after token Injection', async ({ page }) => {
+test('@web Read Browser URL after token Injection', async ({ page }) => {
   await page.addInitScript((authToken: string) => {
     localStorage.setItem('token', authToken);
   }, token);
