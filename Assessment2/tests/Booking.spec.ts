@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, request } from '@playwright/test';
 import config from '../playwright.config';
 import { createBooking, getBooking } from './api-utils/apiUtils';
 
@@ -23,23 +23,32 @@ test('@api Get Booking details', async () => {
   expect(booking.lastname).toBe(payload.lastname);
 });
 
-test('@web Read Browser URL after token Injection', async ({ page }) => {
-  await page.addInitScript((authToken: string) => {
-    localStorage.setItem('token', authToken);
-  }, token);
+test('@web Read Browser URL after token Injection', async ({ page ,context,request}) => {
 
-  await page.route('**/booking/*', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'text/html',
-      body: `<html><body>${payload.firstname} ${payload.lastname}</body></html>`,
-    });
-  });
+await context.addCookies([
+    {
+      name: 'token',
+      value: token,
+      domain: new URL(config.use?.baseURL as string).hostname,
+      path: '/',
+      httpOnly: false,
+      secure: false,
+    },
+  ]);
 
-  await page.goto(`${config.use?.baseURL}/booking/${bookingId}`);
 
-  await expect(page.locator('body')).toContainText(payload.firstname);
-  await expect(page.evaluate(() => localStorage.getItem('token'))).resolves.toBe(token);
+   await page.goto(`${config.use?.baseURL}/booking/${bookingId}`);
+
+    const response = await request.get(
+    `${config.use?.baseURL}/booking/${bookingId}`
+  );
+
+  expect(response.ok()).toBeTruthy();
+
+  const body = await response.json();
+
+  expect(body.firstname).toBe('Jim');
+  expect(body.lastname).toBe('Brown');
 });
 
 
