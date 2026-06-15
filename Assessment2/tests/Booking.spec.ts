@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import config from '../playwright.config';
 import { createBooking, getBooking } from './api-utils/apiUtils';
 
 let bookingId: number;
@@ -35,7 +36,7 @@ test('@webRead Browser URL after token Injection', async ({ page }) => {
     });
   });
 
-  await page.goto(`https://restful-booker.herokuapp.com/booking/${bookingId}`);
+  await page.goto(`${config.use?.baseURL}/booking/${bookingId}`);
 
   await expect(page.locator('body')).toContainText(payload.firstname);
   await expect(page.evaluate(() => localStorage.getItem('token'))).resolves.toBe(token);
